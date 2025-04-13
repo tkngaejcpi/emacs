@@ -1,0 +1,23 @@
+;; MUST load straight first
+(require 'init-straight)
+
+;; load other config
+(require 'init-aidermacs)
+(require 'init-avy)
+(require 'init-corfu)
+(require 'init-dired)
+(require 'init-display-line-numbers)
+(require 'init-emacs)
+(require 'init-hl-line)
+(require 'init-magit)
+(require 'init-markdown-mode)
+(require 'init-modus-themes)
+(require 'init-orderless)
+(require 'init-paredit)
+(require 'init-tab-line)
+(require 'init-treesit)
+(require 'init-vertico)
+(require 'init-vterm)
+(require 'init-web-mode)
+
+(provide '+init)

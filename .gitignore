@@ -1,0 +1,13 @@
+# aider
+.aider*
+
+# emacs
+auto-save-list
+eln-cache/
+projects
+straight/build/
+straight/build-cache.el
+straight/repos/
+tramp
+transient/
+tree-sitter/
