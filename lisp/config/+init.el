@@ -7,6 +7,8 @@
 (require 'init-corfu)
 (require 'init-dired)
 (require 'init-display-line-numbers)
+(require 'init-eglot)
+(require 'init-eglot-booster)
 (require 'init-emacs)
 (require 'init-hl-line)
 (require 'init-magit)

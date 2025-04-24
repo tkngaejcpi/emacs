@@ -4,6 +4,7 @@
 # emacs
 auto-save-list
 eln-cache/
+language-server/*/.venv
 projects
 straight/build/
 straight/build-cache.el
