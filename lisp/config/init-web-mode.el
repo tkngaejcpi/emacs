@@ -1,9 +1,12 @@
 (straight-use-package 'web-mode)
 
-(add-to-list 'auto-mode-alist
-	     '("\\.astro\\'" . web-mode))
+(dolist (file-ext '("\\.astro\\'"
+		    "\\.js\\'"
+		    "\\.jsx\\'"
+		    "\\.ts\\'"
+		    "\\.tsx\\'"))
 
-(use-package web-mode
-  :mode ("\\.astro\\'" . web-mode))
+  (add-to-list 'auto-mode-alist
+	       `(,file-ext . web-mode)))
 
 (provide 'init-web-mode)
