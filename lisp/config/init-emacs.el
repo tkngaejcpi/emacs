@@ -10,10 +10,8 @@
 (setq-default mode-line-format
 	      (list
 	       "%e"
-	       mode-line-front-space
 	       
 	       mode-line-mule-info
-	       mode-line-client
 	       mode-line-modified
 	       mode-line-remote
 	       
@@ -27,9 +25,14 @@
 	       '(:eval mode-name)
 	       
 	       "  "
-	       '(:eval `(vc-mode vc-mode))
-	       
-	       mode-line-end-spaces))
+	       '(:eval '(vc-mode vc-mode))
+
+	       'mode-line-format-right-align
+	       `(:eval (when persp-mode
+			 (format "[%s]" (propertize (persp-name (get-current-persp))
+							   'face 'italic))))
+	       "  "
+	       ))
 
 (add-hook 'after-init-hook
 	  (lambda ()

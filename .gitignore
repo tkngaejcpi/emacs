@@ -5,6 +5,7 @@
 auto-save-list
 eln-cache/
 language-server/*/.venv
+persp-confs/
 projects
 straight/build/
 straight/build-cache.el
