@@ -10,6 +10,7 @@
 (require 'init-eglot)
 (require 'init-eglot-booster)
 (require 'init-emacs)
+(require 'init-gptel)
 (require 'init-hl-line)
 (require 'init-magit)
 (require 'init-markdown-mode)
