@@ -1,3 +1,5 @@
+;; DEPRECATED, but keep it in the codebase in case of ?
+
 (defvar +autoload-directory (expand-file-name "autoload"
 					      user-emacs-directory))
 
