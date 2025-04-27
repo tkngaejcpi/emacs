@@ -18,6 +18,7 @@
 (require 'init-orderless)
 (require 'init-paredit)
 (require 'init-persp-mode)
+(require 'init-repeat)
 (require 'init-tab-line)
 (require 'init-treesit)
 (require 'init-vertico)
