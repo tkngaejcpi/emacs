@@ -2,7 +2,6 @@
 
 (setq corfu-auto t)
 
-(add-hook 'after-init-hook
-	  #'global-corfu-mode)
+(add-hook 'after-init-hook #'global-corfu-mode)
 
 (provide 'init-corfu)

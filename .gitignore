@@ -3,6 +3,7 @@
 
 # emacs
 auto-save-list
+epkgs/
 eln-cache/
 language-server/*/.venv
 persp-confs/
@@ -11,5 +12,4 @@ straight/build/
 straight/build-cache.el
 straight/repos/
 tramp
-transient/
 tree-sitter/

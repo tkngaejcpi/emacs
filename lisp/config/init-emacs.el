@@ -1,12 +1,3 @@
-(setq inhibit-startup-screen t)
-(setq make-backup-files nil)
-
-(setq-default cursor-type 'bar)
-
-(setq default-frame-alist '((width . 90)
-                            (height . 50)
-                            (alpha-background . 95)))
-
 (setq-default mode-line-format
 	      (list
 	       "%e"
@@ -33,12 +24,6 @@
 							   'face 'italic))))
 	       "  "
 	       ))
-
-(add-hook 'after-init-hook
-	  (lambda ()
-	    (menu-bar-mode -1)
-	    (tool-bar-mode -1)
-	    (scroll-bar-mode -1)))
 
 (add-hook 'window-setup-hook
 	  (lambda ()

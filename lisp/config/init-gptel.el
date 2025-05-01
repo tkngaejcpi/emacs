@@ -1,4 +1,7 @@
 (straight-use-package 'gptel)
+(straight-use-package 'dash)
+
+(require 'dash)
 
 ;; bind keys
 (keymap-set global-map
@@ -38,5 +41,30 @@
 		   :input-cost 0.15
 		   :output-cost 0.60
 		   :cutoff-date "2025-01"))))
+
+;; tools
+(with-eval-after-load 'gptel
+  (gptel-make-tool
+   :category "emacs"
+   :name "read_documentation"
+   :description "Read documentation of a given function or variable in Emacs, and return a string which is either the documentation or a message."
+
+   :function (lambda (symbol-id)
+	       (let ((symbol (intern symbol-id)))
+		 (cond ((fboundp symbol)
+			(-> symbol
+			    (describe-function)
+			    (save-window-excursion)
+			    (substring-no-properties)))
+
+		       ((boundp symbol)
+			(-> symbol
+			    (describe-function)
+			    (save-window-excursion)
+			    (substring-no-properties)))
+
+		       (t "No documentation."))))
+
+   :args '((:name "symbol-id" :type string :description "The identifier (name) of the function or variable you want."))))
 
 (provide 'init-gptel)

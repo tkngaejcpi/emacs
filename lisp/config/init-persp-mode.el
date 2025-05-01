@@ -1,5 +1,7 @@
 (straight-use-package 'persp-mode)
 
+(setq persp-save-dir
+      (expand-file-name "~/.cache/emacs/persp-confs"))
 
 (setq persp-auto-save-opt 2)
 
