@@ -1,3 +1,5 @@
+;; TODO: setup treesit
+
 ;;; Utils
 (defun version>= (version-a version-b)
   (not (version< version-a version-b)))
@@ -7,13 +9,16 @@
   (error "Emacs version should >= 30.1."))
 
 (unless (treesit-available-p)
-  (error "Emacs is not compiled with tree sitter."))
+  (error "Emacs shoule be compiled with tree sitter."))
 
 (unless (executable-find "uvx")
-  (warn "Uvx is required for language servers."))
+  (warn "Executable uvx is required for eglot."))
 
 (unless (executable-find "bunx")
-  (warn "Bunx is required for language servers."))
+  (warn "Executable bunx is required for eglot."))
+
+(unless (executable-find "emacs-lsp-booster")
+  (warn "Executable emacs-lsp-booster is required for eglot-booster."))
 
 ;;; Package Management
 
