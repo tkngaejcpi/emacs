@@ -87,6 +87,8 @@
 	       mode-line-front-space
 	       
 	       mode-line-buffer-identification
+	       "  "
+	       
 	       '(:eval mode-name)
 
 	       'mode-line-format-right-align
