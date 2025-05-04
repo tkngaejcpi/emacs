@@ -1,10 +1,23 @@
-;;; customize emacs
-(setq custom-file
-      (locate-user-emacs-file "custom.el"))
+;;; Utils
+(defun version>= (version-a version-b)
+  (not (version< version-a version-b)))
 
-(load custom-file)
+;;; Assertions
+(unless (version>= emacs-version "30.1")
+  (error "Emacs version should >= 30.1."))
 
-;;; bootstrap straight
+(unless (treesit-available-p)
+  (error "Emacs is not compiled with tree sitter."))
+
+(unless (executable-find "uvx")
+  (warn "Uvx is required for language servers."))
+
+(unless (executable-find "bunx")
+  (warn "Bunx is required for language servers."))
+
+;;; Package Management
+
+;;;; Bootstrap
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name
@@ -23,31 +36,182 @@
 
 (setq straight-vc-git-default-clone-depth 1)
 
-;;; load config
-(add-to-list 'load-path
-	     (locate-user-emacs-file "lisp/config"))
+;;; Emacs Lisp
+(straight-use-package 'llama)
+(straight-use-package 'dash)
 
-(require 'init-aidermacs)
-(require 'init-avy)
-(require 'init-corfu)
-(require 'init-dired)
-(require 'init-display-line-numbers)
-(require 'init-eglot)
-(require 'init-eglot-booster)
-(require 'init-emacs)
-(require 'init-gptel)
-(require 'init-hl-line)
-(require 'init-magit)
-(require 'init-markdown-mode)
-(require 'init-minuet)
-(require 'init-modus-themes)
-(require 'init-orderless)
-(require 'init-paredit)
-(require 'init-persp-mode)
-(require 'init-repeat)
-(require 'init-tab-line)
-(require 'init-treesit)
-(require 'init-vertico)
-(require 'init-vterm)
-(require 'init-web-mode)
+(require 'llama)
+(require 'dash)
 
+;;; Appearance
+
+;;;; Frame
+(setq default-frame-alist
+      '((height . 40)
+	(width . 80)
+	(alpha-background . 95)))
+
+;;;; Bar
+(add-hook 'after-init-hook
+	  (lambda ()
+	    (menu-bar-mode -1)
+	    (tool-bar-mode -1)))
+
+(set-window-scroll-bars (minibuffer-window) nil nil nil nil 1)
+
+;;;; Theme
+(straight-use-package 'modus-themes)
+
+(add-hook 'after-init-hook
+	  (## load-theme 'modus-operandi t))
+
+;;;; Font
+(add-hook 'window-setup-hook
+	  (lambda ()
+	    (set-face-attribute 'default
+				nil
+				:font (font-spec :family "Cascadia Code"
+						 :size 14))
+	    
+	    (set-fontset-font t
+			      'unicode
+			      "Noto Sans CJK HK")
+
+	    (set-fontset-font t
+			      'emoji
+			      "Noto Color Emoji")))
+
+;;;; Mode Line
+(setq-default mode-line-format
+	      (list
+	       mode-line-front-space
+	       
+	       mode-line-buffer-identification
+	       '(:eval mode-name)
+
+	       'mode-line-format-right-align
+	       
+	       '(:eval '(vc-mode vc-mode))
+	       
+	       mode-line-end-spaces))
+
+;;; Completion
+
+;;;; Minibuffer
+(straight-use-package 'vertico)
+(add-hook 'after-init-hook #'vertico-mode)
+
+;;;; Buffer
+(straight-use-package 'corfu)
+(add-hook 'after-init-hook #'global-corfu-mode)
+
+(setq corfu-auto t)
+
+;;;; Completion Style
+(straight-use-package 'orderless)
+
+(setq completion-styles '(orderless basic))
+(setq completion-category-overrides '((file (styles basic partial-completion))))
+
+;;; Editing
+
+;;;; Highlight Line
+(add-hook 'after-init-hook #'global-hl-line-mode)
+
+(dolist (hook '(vterm-mode-hook))
+  (add-hook hook
+	    (## hl-line-mode 'toggle)))
+
+;;;; Line Number
+(add-hook 'prog-mode-hook #'display-line-numbers-mode)
+
+;;;; Repeat
+(add-hook 'after-init-hook #'repeat-mode)
+
+;;;; Jumping
+(straight-use-package 'avy)
+
+(keymap-set global-map
+	    "C-."
+	    #'avy-goto-char-timer)
+
+;;;; Emacs Lisp
+
+;;;;; Indent
+(autoload #'common-lisp-indent-function "cl-indent")
+(add-hook 'emacs-lisp-mode-hook
+	  (## setq lisp-indent-function #'common-lisp-indent-function))
+
+;;;;; Pair Edit
+(straight-use-package 'paredit)
+(add-hook 'emacs-lisp-mode-hook #'paredit-mode)
+
+;;; Extra Modes
+
+;;;; Markdown Mode
+(straight-use-package 'markdown-mode)
+
+;;; Language Server
+
+;;;; Servers
+(with-eval-after-load 'eglot
+  (dolist (config
+	    `(((python-mode python-ts-mode)
+	       ,(executable-find "uvx")
+	       "--from"
+	       "basedpyright"
+	       "basedpyright-langserver"
+	       "--stdio")
+
+	      (typescript-ts-mode
+	       ,(executable-find "bunx")
+	       "typescript-language-server"
+	       "--stdio")))
+
+    (add-to-list 'eglot-server-programs config)))
+
+(dolist (hook '(python-mode-hook
+		typescript-ts-mode))
+  (add-hook hook #'eglot-ensure))
+
+;;;; Boosting
+(straight-use-package
+ '(eglot-booster
+   :type git
+   :host github
+   :repo "jdtsmith/eglot-booster"))
+
+(add-hook 'after-init-hook #'eglot-booster-mode)
+
+;;; AI Integration
+
+;;;; Aider
+(straight-use-package 'aidermacs)
+
+(setq aidermacs-backend 'vterm)
+
+(keymap-set global-map
+	    "C-c a"
+	    #'aidermacs-transient-menu)
+
+;;; Toolkit
+
+;;;; File Explorer
+(add-hook 'dired-mode-hook #'dired-hide-details-mode)
+(add-hook 'dired-mode-hook #'dired-omit-mode)
+
+(setq dired-kill-when-opening-new-dired-buffer t)
+
+;;;; Git
+(straight-use-package 'magit)
+
+;;;; Terminal
+(straight-use-package 'vterm)
+
+;;; Extra
+(setq inhibit-startup-screen t)
+(setq make-backup-files nil)
+
+(setq-default cursor-type 'bar)
+
+(setq mouse-wheel-follow-mouse t)
