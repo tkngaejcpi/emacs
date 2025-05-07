@@ -135,13 +135,6 @@
 ;;;; Repeat
 (add-hook 'after-init-hook #'repeat-mode)
 
-;;;; Jumping
-(straight-use-package 'avy)
-
-(keymap-set global-map
-	    "C-."
-	    #'avy-goto-char-timer)
-
 ;;;; Emacs Lisp
 
 ;;;;; Indent
