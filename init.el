@@ -1,5 +1,3 @@
-;; TODO: setup treesit
-
 ;;; Utils
 (defun version>= (version-a version-b)
   (not (version< version-a version-b)))
@@ -150,6 +148,21 @@
 
 ;;;; Markdown Mode
 (straight-use-package 'markdown-mode)
+
+;;; Treesit
+
+;;;; Source
+(setq treesit-language-source-alist
+      '((elisp . ("https://github.com/Wilfred/tree-sitter-elisp" "1.5.0" "src"))
+	(typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.23.2" "typescript/src"))
+	(tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.23.2" "tsx/src"))))
+
+;;;; Grammar
+(with-eval-after-load 'treesit
+  (->> treesit-language-source-alist
+       (-map #'car)
+       (-filter (-compose #'not #'treesit-language-available-p))
+       (-map #'treesit-install-language-grammar)))
 
 ;;; Language Server
 
