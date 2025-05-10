@@ -1,6 +1,16 @@
+;;; Emacs Lisp
+(require 'seq)
+(require 'subr-x)
+
 ;;; Utils
 (defun version>= (version-a version-b)
   (not (version< version-a version-b)))
+
+(defun get-mode-hook (mode)
+  (thread-last mode
+	       (symbol-name)
+	       (format "%s-hook")
+	       (intern)))
 
 ;;; Assertions
 (unless (version>= emacs-version "30.1")
@@ -39,13 +49,6 @@
 
 (setq straight-vc-git-default-clone-depth 1)
 
-;;; Emacs Lisp
-(straight-use-package 'llama)
-(straight-use-package 'dash)
-
-(require 'llama)
-(require 'dash)
-
 ;;; Appearance
 
 ;;;; Frame
@@ -66,7 +69,8 @@
 (straight-use-package 'modus-themes)
 
 (add-hook 'after-init-hook
-	  (## load-theme 'modus-operandi t))
+	  (lambda ()
+	    (load-theme 'modus-operandi-tinted t)))
 
 ;;;; Font
 (add-hook 'window-setup-hook
@@ -125,7 +129,8 @@
 
 (dolist (hook '(vterm-mode-hook))
   (add-hook hook
-	    (## hl-line-mode 'toggle)))
+	    (lambda ()
+	      (hl-line-mode 'toggle))))
 
 ;;;; Line Number
 (add-hook 'prog-mode-hook #'display-line-numbers-mode)
@@ -138,7 +143,8 @@
 ;;;;; Indent
 (autoload #'common-lisp-indent-function "cl-indent")
 (add-hook 'emacs-lisp-mode-hook
-	  (## setq lisp-indent-function #'common-lisp-indent-function))
+	  (lambda ()
+	    (setq lisp-indent-function #'common-lisp-indent-function)))
 
 ;;;;; Pair Edit
 (straight-use-package 'paredit)
@@ -159,10 +165,11 @@
 
 ;;;; Grammar
 (with-eval-after-load 'treesit
-  (->> treesit-language-source-alist
-       (-map #'car)
-       (-filter (-compose #'not #'treesit-language-available-p))
-       (-map #'treesit-install-language-grammar)))
+  (thread-last treesit-language-source-alist
+	       (seq-map #'car)
+	       (seq-filter (lambda (x)
+			     (not (treesit-language-available-p x))))
+	       (seq-do #'treesit-install-language-grammar)))
 
 ;;; Language Server
 
@@ -183,9 +190,12 @@
 
     (add-to-list 'eglot-server-programs config)))
 
-(dolist (hook '(python-mode-hook
-		typescript-ts-mode))
-  (add-hook hook #'eglot-ensure))
+(thread-last '(python-mode
+	       typescript-ts-mode)
+
+	     (seq-map #'get-mode-hook)
+	     (seq-do (lambda (x)
+		       (add-hook x #'eglot-ensure))))
 
 ;;;; Boosting
 (straight-use-package
