@@ -1,8 +1,6 @@
 (("aidermacs" . "bbf70dbf44e004d58a497d544907bbd05c43af93")
- ("avy" . "933d1f36cca0f71e4acb5fac707e9ae26c536264")
  ("compat" . "2aee8353772745bb18db1ca63729a7f5ea572a74")
  ("corfu" . "6db826974963f8fb5d8b9832e7c09da2fea3296a")
- ("dash.el" . "fcb5d831fc08a43f984242c7509870f30983c27c")
  ("eglot" . "34014b6397f4c75737e5c112676a1e6c7815a90d")
  ("eglot-booster" . "e6daa6bcaf4aceee29c8a5a949b43eb1b89900ed")
  ("el-get" . "ec5cba8d965980b2c47a8a11dce30dd5e845ed2a")
