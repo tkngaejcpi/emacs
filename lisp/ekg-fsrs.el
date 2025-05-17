@@ -1,3 +1,4 @@
+;; --- DEPRECATED ---
 (straight-use-package 'ekg)
 (straight-use-package 'fsrs)
 
@@ -113,5 +114,12 @@
     (ekg-fsrs-prepend-note-review-log note this-review-log)
     (ekg-fsrs-update-tag note)
     (ekg-save-note note)))
+
+(defun ekg-fsrs-show-notes (date)
+
+  (cl-letf (((symbol-function #'ekg-display-note-insert) (lambda (note)
+							  (insert (ekg-display-note note ekg-oneliner-note-template)))))
+
+    (ekg-show-notes-with-tag (ekg-fsrs-make-tag date))))
 
 (provide 'ekg-fsrs)
