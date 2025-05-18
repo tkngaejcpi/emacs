@@ -1,6 +1,28 @@
+;;; Package
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name
+        "straight/repos/straight.el/bootstrap.el"
+        (or (bound-and-true-p straight-base-dir)
+            user-emacs-directory)))
+      (bootstrap-version 7))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+
+(setq straight-vc-git-default-clone-depth 1)
+
 ;;; Emacs Lisp
 (require 'seq)
 (require 'subr-x)
+
+(straight-use-package 'llama)
+(require 'llama)
 
 ;;; Utils
 (defun version>= (version-a version-b)
@@ -28,49 +50,21 @@
 (unless (executable-find "emacs-lsp-booster")
   (warn "Executable emacs-lsp-booster is required for eglot-booster."))
 
-;;; Package Management
-
-;;;; Bootstrap
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name
-        "straight/repos/straight.el/bootstrap.el"
-        (or (bound-and-true-p straight-base-dir)
-            user-emacs-directory)))
-      (bootstrap-version 7))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
-
-(setq straight-vc-git-default-clone-depth 1)
-
 ;;; Appearance
 
 ;;;; Frame
 (setq default-frame-alist
-      '((height . 40)
-	(width . 80)
-	(alpha-background . 95)))
+      '((alpha-background . 95)))
 
 ;;;; Bar
-(add-hook 'after-init-hook
-	  (lambda ()
-	    (menu-bar-mode -1)
-	    (tool-bar-mode -1)))
-
-(set-window-scroll-bars (minibuffer-window) nil nil nil nil 1)
+(scroll-bar-mode -1)
+(menu-bar-mode -1)
+(tool-bar-mode -1)
 
 ;;;; Theme
-(straight-use-package 'modus-themes)
+(straight-use-package 'ef-themes)
 
-(add-hook 'after-init-hook
-	  (lambda ()
-	    (load-theme 'modus-operandi-tinted t)))
+(load-theme 'ef-summer t)
 
 ;;;; Font
 (add-hook 'window-setup-hook
@@ -89,30 +83,37 @@
 			      "Noto Color Emoji")))
 
 ;;;; Mode Line
-(setq-default mode-line-format
-	      (list
-	       mode-line-front-space
-	       
-	       mode-line-buffer-identification
-	       "  "
-	       
-	       '(:eval mode-name)
+(defun mode-line-persp-indicator ()
+  (let* ((persp (get-current-persp))
+	 (persp-name (if persp (persp-name persp) "None")))
+    
+    (propertize (format " %s " persp-name)
+		'face (list
+		       :inherit 'mode-line
+		       :background (ef-themes-with-colors bg-graph-magenta-0)
+		       :weight 'bold))))
 
-	       'mode-line-format-right-align
-	       
-	       '(:eval '(vc-mode vc-mode))
-	       
-	       mode-line-end-spaces))
+(setq-default mode-line-format
+	      '((:eval (mode-line-persp-indicator))
+		
+		" "
+		mode-line-buffer-identification
+		" "
+
+		mode-line-format-right-align
+		
+		mode-line-percent-position
+		"  "))
 
 ;;; Completion
 
 ;;;; Minibuffer
 (straight-use-package 'vertico)
-(add-hook 'after-init-hook #'vertico-mode)
+(vertico-mode)
 
 ;;;; Buffer
 (straight-use-package 'corfu)
-(add-hook 'after-init-hook #'global-corfu-mode)
+(global-corfu-mode)
 
 (setq corfu-auto t)
 
@@ -125,7 +126,7 @@
 ;;; Editing
 
 ;;;; Highlight Line
-(add-hook 'after-init-hook #'global-hl-line-mode)
+(global-hl-line-mode)
 
 (dolist (hook '(vterm-mode-hook))
   (add-hook hook
@@ -136,66 +137,104 @@
 (add-hook 'prog-mode-hook #'display-line-numbers-mode)
 
 ;;;; Repeat
-(add-hook 'after-init-hook #'repeat-mode)
+(repeat-mode)
 
 ;;;; Emacs Lisp
-
-;;;;; Indent
-(autoload #'common-lisp-indent-function "cl-indent")
-(add-hook 'emacs-lisp-mode-hook
-	  (lambda ()
-	    (setq lisp-indent-function #'common-lisp-indent-function)))
-
-;;;;; Pair Edit
 (straight-use-package 'paredit)
 (add-hook 'emacs-lisp-mode-hook #'paredit-mode)
 
 ;;; Extra Modes
-
-;;;; Markdown Mode
 (straight-use-package 'markdown-mode)
+(straight-use-package 'astro-ts-mode)
+
+;;; Workspace
+
+;;;; Basic
+(straight-use-package 'persp-mode)
+
+(setq persp-auto-save-opt 2)
+(setq persp-save-dir (file-truename "~/.cache/emacs/persp-confs/"))
+
+(persp-mode 1)
+
+;;;; Hooks
+(add-hook 'dired-mode-hook (## persp-add-buffer (current-buffer)))
+
+;; Key Binding
+(keymap-set persp-mode-map "C-x b" #'persp-switch-to-buffer)
+(keymap-set persp-mode-map "C-x k" #'persp-kill-buffer)
+
+(keymap-set persp-mode-map "C-c p <left>" #'persp-prev)
+(keymap-set persp-mode-map "C-c p <right>" #'persp-next)
+
+(defvar persp-switch-repeat-map
+  (let ((map (make-sparse-keymap)))
+    (keymap-set map "<left>" #'persp-prev)
+    (keymap-set map "<right>" #'persp-next)
+    map))
+
+(dolist (command '(persp-prev persp-next))
+  (put command 'repeat-map 'persp-switch-repeat-map))
 
 ;;; Treesit
 
 ;;;; Source
 (setq treesit-language-source-alist
       '((elisp . ("https://github.com/Wilfred/tree-sitter-elisp" "1.5.0" "src"))
+	(css .  ("https://github.com/tree-sitter/tree-sitter-css" "v0.23.2" "src"))
 	(typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.23.2" "typescript/src"))
-	(tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.23.2" "tsx/src"))))
+	(tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.23.2" "tsx/src"))
+	(astro . ("https://github.com/virchau13/tree-sitter-astro" "master" "src"))))
 
 ;;;; Grammar
 (with-eval-after-load 'treesit
-  (thread-last treesit-language-source-alist
-	       (seq-map #'car)
-	       (seq-filter (lambda (x)
-			     (not (treesit-language-available-p x))))
-	       (seq-do #'treesit-install-language-grammar)))
+  (thread-last
+    treesit-language-source-alist
+    (seq-map #'car)
+    (seq-filter (## thread-last %1
+		    (treesit-language-available-p)
+		    (not)))
+    (seq-do #'treesit-install-language-grammar)))
 
 ;;; Language Server
 
 ;;;; Servers
 (with-eval-after-load 'eglot
-  (dolist (config
+  (let ((bunx (executable-find "bunx"))
+	(uvx (executable-find "uvx")))
+
+    (seq-do (## add-to-list 'eglot-server-programs %1)
 	    `(((python-mode python-ts-mode)
-	       ,(executable-find "uvx")
-	       "--from"
-	       "basedpyright"
-	       "basedpyright-langserver"
-	       "--stdio")
+		 ,uvx
+		 "--from"
+		 "basedpyright"
+		 "basedpyright-langserver"
+		 "--stdio")
 
-	      (typescript-ts-mode
-	       ,(executable-find "bunx")
-	       "typescript-language-server"
-	       "--stdio")))
+		(typescript-ts-mode
+		 ,bunx
+		 "typescript-language-server"
+		 "--stdio")
 
-    (add-to-list 'eglot-server-programs config)))
+		(astro-ts-mode
+		 ,bunx
+		 "@astrojs/language-server"
+		 "--stdio"
+		 :initializationOptions (:typescript (:tsdk "./node_modules/typescript/lib")))))))
 
 (thread-last '(python-mode
-	       typescript-ts-mode)
+	       python-ts-mode
+	       typescript-ts-mode
+	       astro-ts-mode)
 
-	     (seq-map #'get-mode-hook)
-	     (seq-do (lambda (x)
-		       (add-hook x #'eglot-ensure))))
+	     (seq-map (##
+		       thread-last
+		       %1
+		       (symbol-name)
+		       (format "%s-hook")
+		       (intern)))
+	     
+	     (seq-do (## add-hook %1 #'eglot)))
 
 ;;;; Boosting
 (straight-use-package
@@ -236,5 +275,3 @@
 (setq make-backup-files nil)
 
 (setq-default cursor-type 'bar)
-
-(setq mouse-wheel-follow-mouse t)
