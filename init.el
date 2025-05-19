@@ -28,12 +28,6 @@
 (defun version>= (version-a version-b)
   (not (version< version-a version-b)))
 
-(defun get-mode-hook (mode)
-  (thread-last mode
-	       (symbol-name)
-	       (format "%s-hook")
-	       (intern)))
-
 ;;; Assertions
 (unless (version>= emacs-version "30.1")
   (error "Emacs version should >= 30.1."))
@@ -234,7 +228,7 @@
 		       (format "%s-hook")
 		       (intern)))
 	     
-	     (seq-do (## add-hook %1 #'eglot)))
+	     (seq-do (## add-hook %1 #'eglot-ensure)))
 
 ;;;; Boosting
 (straight-use-package
