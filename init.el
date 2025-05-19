@@ -237,7 +237,7 @@
    :host github
    :repo "jdtsmith/eglot-booster"))
 
-(add-hook 'after-init-hook #'eglot-booster-mode)
+(eglot-booster-mode)
 
 ;;; AI Integration
 
@@ -252,7 +252,8 @@
       aidermacs-editor-model "openrouter/deepseek/deepseek-chat-v3-0324"
       aidermacs-weak-model "openrouter/google/gemini-2.5-flash-preview")
 
-(add-to-list 'aidermacs-extra-args "--no-show-model-warnings")
+(setq aidermacs-extra-args (list
+			    "--no-show-model-warnings"))
 
 (keymap-set global-map
 	    "C-c a"
