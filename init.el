@@ -246,6 +246,14 @@
 
 (setq aidermacs-backend 'vterm)
 
+(setq aidermacs-use-architect-mode t
+      aidermacs-architect-model "openrouter/openai/o4-mini-high"
+      aidermacs-default-model "openrouter/openai/o4-mini-high"
+      aidermacs-editor-model "openrouter/deepseek/deepseek-chat-v3-0324"
+      aidermacs-weak-model "openrouter/google/gemini-2.5-flash-preview")
+
+(add-to-list 'aidermacs-extra-args "--no-show-model-warnings")
+
 (keymap-set global-map
 	    "C-c a"
 	    #'aidermacs-transient-menu)
